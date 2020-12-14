@@ -9,8 +9,6 @@
           crossorigin="anonymous">
 </head>
 <body>
-
-<!-- create navigation bar ( header) -->
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -29,17 +27,14 @@
 
 <br>
 <br>
-<!-- Create HTML registration form -->
 <div class="container">
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
 
-            <!-- error message -->
             <div th:if="${param.error}">
                 <div class="alert alert-danger">User with this email already exists.</div>
             </div>
 
-            <!-- success message -->
             <div th:if="${param.success}">
                 <div class="alert alert-info">You've successfully registered.</div>
             </div>

@@ -5,9 +5,9 @@ import com.buinevich.task4.model.dto.UserRequest;
 import com.buinevich.task4.model.entities.User;
 import com.buinevich.task4.model.enums.Status;
 import com.buinevich.task4.model.repositories.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,14 +21,13 @@ import java.util.Collections;
 @Service
 public class UserService implements UserDetailsService {
 
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
-    public UserService(UserRepo userRepo) {
+    public UserService(UserRepo userRepo, BCryptPasswordEncoder passwordEncoder) {
         super();
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -52,4 +51,26 @@ public class UserService implements UserDetailsService {
     public boolean isUserExists(UserRequest userRequest) {
         return userRepo.existsByMail(userRequest.getMail());
     }
+
+    public User getLoggedUser(Object principal) {
+        String mail;
+        if (principal instanceof UserDetails) {
+            mail = ((UserDetails) principal).getUsername();
+        } else {
+            mail = principal.toString();
+        }
+        return userRepo.findByMail(mail).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+    }
+
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String mail;
+        if (principal instanceof UserDetails) {
+            mail = ((UserDetails) principal).getUsername();
+        } else {
+            mail = principal.toString();
+        }
+        return userRepo.findByMail(mail).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+    }
+
 }

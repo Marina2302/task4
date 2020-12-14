@@ -9,7 +9,6 @@
 
 </head>
 <body>
-<!-- create navigation bar ( header) -->
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -32,14 +31,14 @@
 </nav>
 <div class="container">
     <div class="container" style="margin-top: 10rem">
-        <button type="button" class="btn btn-danger">Delete</button>
-        <button type="button" class="btn btn-primary">Block</button>
-        <button type="button" class="btn btn-success">Unblock</button>
+        <button onclick="remove()" type="button" class="btn btn-danger">Delete</button>
+        <button onclick="block()" type="button" class="btn btn-primary">Block</button>
+        <button onclick="unblock()" type="button" class="btn btn-success">Unblock</button>
     </div>
     <table id="usersList" class="table" style="margin-top: 2rem">
         <thead class="thead-light">
         <tr>
-            <th><input type="checkbox" name="confirm"/></th>
+            <th><input type="checkbox" id="select-all"/></th>
             <th>Id</th>
             <th>Name</th>
             <th>Email</th>
@@ -51,6 +50,63 @@
     </table>
 </div>
 <script type="text/javascript">
+    let checked = [];
+    let isLoading = false;
+
+    document.getElementById('select-all').onclick = function() {
+        let checkboxes = document.getElementsByName('user');
+        for (let checkbox of checkboxes) {
+            this.checked && !checkbox.checked
+                ? checked.push(Number(checkbox.parentElement.parentElement.children[1].childNodes[0].nodeValue))
+                : checked = []
+            checkbox.checked = this.checked;
+        }
+    }
+
+    function remove(e) {
+        if (isLoading) return
+        isLoading = true
+        fetch("users/delete", { method: 'DELETE', body: JSON.stringify(checked), headers: { "Content-Type": "application/json" }})
+            .then(data => {
+                checked = []
+                document.location.reload();
+            })
+            .finally(() => isLoading = false)
+    }
+
+    function block(e) {
+        if (isLoading) return
+        isLoading = true
+        fetch("users/block", { method: 'PUT', body: JSON.stringify(checked), headers: { "Content-Type": "application/json" }})
+            .then(data => {
+                checked = []
+                document.location.reload();
+            })
+            .finally(() => isLoading = false)
+    }
+
+
+    function unblock(e) {
+        if (isLoading) return
+        isLoading = true
+        fetch("users/unblock", { method: 'PUT', body: JSON.stringify(checked), headers: { "Content-Type": "application/json" }})
+            .then(data => {
+                checked = []
+                document.location.reload();
+            })
+            .finally(() => isLoading = false)
+    }
+
+    function toggle(e) {
+        let value = parseInt(e.parentElement.parentElement.children[1].childNodes[0].nodeValue, 10)
+        if(!e.checked) {
+            document.getElementById('select-all').checked = false
+            checked = checked.filter(el => el !== value)
+        } else {
+            checked.push(value)
+        }
+    }
+
     function getUsers() {
         fetch("users")
             .then(data => data.json())
@@ -59,9 +115,8 @@
                     if (!element.lastLoginDate) {
                         element.lastLoginDate = "never logged in"
                     }
-                    element.checked = false;
-                    const row = `<tr>
-                                <td><input type="checkbox" name="confirm" th:checked="${element.checked}" /></td>
+                    const row = `<tr class="table-row">
+                                <td><input type="checkbox" name="user" onclick="toggle(this)"/></td>
                                 <td>${element.id}</td>
                                 <td>${element.name}</td>
                                 <td>${element.mail}</td>
