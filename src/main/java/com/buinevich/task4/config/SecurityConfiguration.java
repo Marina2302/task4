@@ -66,6 +66,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 		http.cors().and().csrf().disable();
 
-		http.sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
+		http.sessionManagement()
+				.maximumSessions(1)
+				.sessionRegistry(sessionRegistry())
+				.maxSessionsPreventsLogin(false);
 	}
 }
